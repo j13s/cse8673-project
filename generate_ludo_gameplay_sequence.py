@@ -36,6 +36,7 @@ def save_history(game=None, filename_prefix=None, n=None, padding=None):
     # Save the play history to a file
     try:
         filename = f"{filename_prefix}.{str(n).zfill(padding)}.npy"
+        filename = os.path.join("ludoHistory",filename)
         game.save_hist(filename)
 
         # Set history readonly to prevent accidentally overwriting old
