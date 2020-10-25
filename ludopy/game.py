@@ -8,14 +8,19 @@ class Game:
     The Game. This class is the only needed class for normal use
     """
 
-    def __init__(self, ghost_players=[]):
+    def __init__(self, ghost_players=[], number_of_pieces=4):
         """
         Maked a game with 4 players
 
         :param ghost_players: Players there are not in the game
         :type ghost_players: list of int
         """
-        self.players = [Player(), Player(), Player(), Player()]
+        self.players = [
+            Player(number_of_pieces=number_of_pieces),
+            Player(number_of_pieces=number_of_pieces),
+            Player(number_of_pieces=number_of_pieces),
+            Player(number_of_pieces=number_of_pieces),
+        ]
         self.hist = []
         self.round = 1
         self.current_player = 0
@@ -305,17 +310,36 @@ class Game:
         board_img = make_img_of_board(*self.hist[-1])
         return board_img
 
-    def save_hist(self, file_name):
+    def get_hist(self):
+        """
+        Return the entire history of the game.
+
+        :return history: A history of every event in the Ludo game
+        :rtype history: ndarray
+        """
+
+        # If there are ghost players, do not include them in the output
+        history = np.copy(self.hist)
+
+        if self.ghost_players:
+            for state in history:
+                # https://stackoverflow.com/a/11303234/374681
+                for i in sorted(self.ghost_players, reverse=True):
+                    del state[0][i]
+
+        return history
+
+    def save_hist(self, fp):
         """
         Saves the history of the game as an npy file
 
-        :param file_name: The file name to save under. Has to have the .npy (numpy file) extension
-        :type file_name: str
+        :param fp: A `File` object representing the file to save to
+        :type file_name: `File`
 
         """
-        file_ext = file_name.split(".")[-1]
-        assert file_ext == "npy", "The file extension has to be npy (numpy file)"
-        np.save(file_name, self.hist)
+
+        history = self.get_hist()
+        np.save(fp, history)
 
     def save_hist_video(self, video_out, fps=8, frame_size=None, fourcc=None):
         """

@@ -19,3 +19,22 @@ The encoding for the positions of the pawns on the Ludo board. Home and goal
 
     52 =  1 + 3 +   6   +    6   +    6   +    6   +    6   +    6   +    6   +    6
 
+# Tools
+
+## walk.py
+
+Write a Ludo history to STDOUT.
+
+### Usage `walk.py [OPTIONS]`
+
+`--number-of-players` Number of Ludo players.
+`--number-of-pieces` Number of pieces per Ludo player.
+
+## hist2mp4.py
+
+Takes a LUDOpy history file from STDIN and outputs it to `filename`.
+
+### Usage `hist2mp4.py [FILENAME]`
+
+`FILENAME` Filename of the video file to save to.
+

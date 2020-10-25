@@ -124,12 +124,12 @@ class Player:
     A class used by the Game class. This class is not needed for normal use
     """
 
-    def __init__(self):
+    def __init__(self, number_of_pieces=4):
         """
         Makes a player with 4 pieces all at the home locations
         """
         self.pieces = []
-        self.number_of_pieces = 4
+        self.number_of_pieces = number_of_pieces
         self.set_all_pieces_to_home()
 
     def get_pieces_that_can_move(self, dice):
