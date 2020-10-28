@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 
 import ludopy
@@ -43,4 +45,101 @@ def randwalk(number_of_players=4, number_of_pieces=4):
         _, _, _, _, _, there_is_a_winner = g.answer_observation(piece_to_move)
 
     return g
+
+
+BOARD = 0
+DIE = -3
+PLAYER = -2
+ROUND = -1
+class History:
+    def __init__(self, frames=None):
+        self.__rounds = self.__compute_rounds(frames=frames)
+
+        return
+
+    def __compute_rounds(self, frames=[]):
+        rounds = []
+
+        for i in range(1, frames[-1][ROUND] + 1):
+            rounds.append(Round())
+            current_round = list(filter(lambda f: f[ROUND] == i, frames))
+
+            for j in range(0, current_round[-1][PLAYER] + 1):
+                turn_frames = list(
+                    filter(lambda f: f[PLAYER] == j, current_round)
+                )
+
+                for i in range(0, len(turn_frames), 2):
+                    before = turn_frames[i]
+                    after = turn_frames[i + 1]
+                    t = Turn(frames=[before, after])
+                    rounds[-1].append_turn(t)
+
+        return rounds
+
+    def rounds(self):
+        return copy.copy(self.__rounds)
+
+
+class Round:
+    def __init__(self):
+        self.__turns = []
+
+        return
+
+    def append_turn(self, turn=None):
+        if isinstance(turn, Turn):
+            self.__turns.append(turn)
+
+    def turns(self):
+        return copy.copy(self.__turns)
+
+
+class Turn:
+    def __init__(self, frames=[]):
+        self.__frames = copy.copy(frames)
+
+        self.__player = frames[0][PLAYER]
+
+        self.__states = self.__compute_states(frames=frames)
+
+        self.__num_pieces = len(self.__states[0])
+
+        self.__action = self.__compute_action(frames=frames)
+
+        self.__die_roll = frames[0][DIE]
+
+        return
+
+    def player(self):
+        return self.__player
+
+    def action(self):
+        return self.__action
+
+    def die_roll(self):
+        return self.__die_roll
+
+    def state(self):
+        return copy.copy(self.__states[0])
+
+    def __compute_action(self, frames=[]):
+        before = self.__states[-2]
+        after = self.__states[-1]
+
+        action = None
+        for i in range(self.__num_pieces):
+            if before[i] != after[i]:
+                action = i
+                break
+        
+        return action
+
+    def __compute_states(self, frames=[]):
+        states = []
+
+        for frame in frames:
+            states.append(frame[BOARD][self.player()])
+
+        return states
 
