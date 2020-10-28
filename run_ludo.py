@@ -14,12 +14,12 @@ if __name__ == "__main__":
     # Load checkpoint
     load_version = 8
     save_version = load_version + 1
-    load_path = "output/weights/LunarLander/{}/LunarLander-v2.ckpt".format(load_version)
-    save_path = "output/weights/LunarLander/{}/LunarLander-v2.ckpt".format(save_version)
+    load_path = "openai/output/weights/LunarLander/{}/LunarLander-v2.ckpt".format(load_version)
+    save_path = "openai/output/weights/LunarLander/{}/LunarLander-v2.ckpt".format(save_version)
 
     PG_dict = {}
     
-    for i in range(number_of_players:
+    for i in range(number_of_players):
         pg = PolicyGradient(
             n_x = (number_of_players*number_of_pieces) + 1,   #input layer size
             n_y = 5,   #ouput layer size
@@ -49,6 +49,7 @@ if __name__ == "__main__":
                 (dice, move_pieces, player_pieces, enemy_pieces, \
                      player_is_a_winner,there_is_a_winner),\
                      player_i = g.get_observation()
+		#How to get the right enemy_pieces
                 if player_i == 0:
                     observation = np.vstack(player_pieces[:,np.newaxis],\
                                             enemy_pieces[-1][:,np.newaxis])
