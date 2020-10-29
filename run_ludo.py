@@ -13,11 +13,10 @@ if __name__ == "__main__":
     number_of_players=2
     number_of_pieces=4
     # Load checkpoint
-    load_version = 8
+    load_version = 9
     save_version = load_version + 1
-    load_path = "openai/output/weights/ludo/{}/ludo-v2.ckpt".format(load_version)
-    load_path = None
-    save_path = "openai/output/weights/ludo/{}/ludo-v2.ckpt".format(save_version)
+    load_path = "output/weights/ludo/{}/ludo-v2.ckpt".format(load_version)
+    save_path = "output/weights/ludo/{}/ludo-v2.ckpt".format(save_version)
 
     PG_dict = {}
     reward = 0
