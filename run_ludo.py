@@ -8,12 +8,12 @@ import pdb
 
 if __name__ == "__main__":
     number_of_players=2
-    number_of_pieces=2
+    number_of_pieces=4
     # Load checkpoint
-    load_version =11
+    load_version =12
     save_version = load_version+1
     load_path = "output/weights/ludo/{}/ludo-v2.ckpt".format(load_version)
-    #load_path = None
+    load_path = None
     save_path = "output/weights/ludo/{}/ludo-v2.ckpt".format(save_version)
     
     PG_dict = {}
@@ -30,11 +30,9 @@ if __name__ == "__main__":
         )
     
         PG_dict[i] = pg
-    EPISODES = 1
+    EPISODES = 1000
     ghost_players = list(reversed(range(0, 4)))[:-number_of_players]
-    #ghost_players = [0,2]
     players = list(reversed(range(0, 4)))[-number_of_players:]
-    #players = [3,1]
     winner = None
     for episode in range(EPISODES):
         if episode%500 == 0 :
@@ -52,7 +50,7 @@ if __name__ == "__main__":
                 (dice, move_pieces, player_pieces, enemy_pieces, \
                          player_is_a_winner,there_is_a_winner),\
                                  player_i = g.get_observation()
-		#How to get the right enemy_pieces
+
                 if player_i == 0:
                     observation = np.vstack((player_pieces[:,np.newaxis],\
                                             enemy_pieces[-1][:,np.newaxis]))
@@ -65,8 +63,8 @@ if __name__ == "__main__":
           
                 # 1. Choose an action based on observation
                 action = PG.choose_action(observation)
-                #pdb.set_trace()
                 #now there will be no None as the output from the policy
+
                 if len(move_pieces):
                     if action not in move_pieces:
                         action = move_pieces[np.random.randint(0, len(move_pieces))]
@@ -81,28 +79,24 @@ if __name__ == "__main__":
                 
                 
                 if there_is_a_winner:
-                    if episode%1000 == 0:
-                        print("saving a game")
+                    if episode%10000 == 0:
+                        print("saving the game")
                         g.save_hist_video("test"+"game.avi")
                     winner = player_i
                     break
 
             if there_is_a_winner:
-                break
-                #pdb.set_trace()
                 for i in range(number_of_players):
                     # 5. Train neural network
                     PG = PG_dict[i]
                     try:
-                        if len(PG.episode_rewards) > 0:
-                            if winner == i:
-                                PG.episode_rewards = [i+2000 for i in PG.episode_rewards]
-
-                            discounted_episode_rewards_norm = PG.learn()
-                        else:
-                            PG.episode_observations, PG.episode_actions, PG.episode_rewards  = [], [], []
+                        if winner == i:
+                            PG.episode_rewards = [i+2000 for i in PG.episode_rewards]
+                        discounted_episode_rewards_norm = PG.learn(episode)
                     except Exception as e:
-                        print(episode)
+                        print(episode,"---",e)
+                        pdb.set_trace()
+                        PG.episode_observations, PG.episode_actions, PG.episode_rewards  = [], [], []
                         pass
 
                 break

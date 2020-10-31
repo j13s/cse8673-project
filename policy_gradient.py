@@ -16,7 +16,7 @@ class PolicyGradient:
         reward_decay=0.95,
         load_path=None,
         save_path=None,
-        player_num=""
+        player_num = ""
     ):
 
         self.n_x = n_x
@@ -29,7 +29,7 @@ class PolicyGradient:
             self.save_path = save_path
 
         self.episode_observations, self.episode_actions, self.episode_rewards = [], [], []
-
+        
         self.build_network(player_num)
 
         self.cost_history = []
@@ -89,7 +89,7 @@ class PolicyGradient:
         action = np.random.choice(range(len(prob_weights.ravel())), p=prob_weights.ravel())
         return action
 
-    def learn(self):
+    def learn(self,episode):
         # Discount and normalize episode reward
         discounted_episode_rewards_norm = self.discount_and_norm_rewards()
 
@@ -105,8 +105,7 @@ class PolicyGradient:
 
         # Save checkpoint
         if self.save_path is not None:
-            
-            save_path = self.saver.save(self.sess, self.save_path)
+            save_path = self.saver.save(self.sess, self.save_path+str(episode))
             print("Model saved in file: %s" % save_path)
 
         return discounted_episode_rewards_norm
