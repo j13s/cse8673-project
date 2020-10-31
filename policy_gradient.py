@@ -105,6 +105,7 @@ class PolicyGradient:
 
         # Save checkpoint
         if self.save_path is not None:
+            
             save_path = self.saver.save(self.sess, self.save_path)
             print("Model saved in file: %s" % save_path)
 
@@ -117,8 +118,10 @@ class PolicyGradient:
             cumulative = cumulative * self.gamma + self.episode_rewards[t]
             discounted_episode_rewards[t] = cumulative
         discounted_episode_rewards = np.float_(discounted_episode_rewards)
-        discounted_episode_rewards -= np.mean(discounted_episode_rewards)
-        discounted_episode_rewards /= np.std(discounted_episode_rewards)
+        #discounted_episode_rewards -= np.mean(discounted_episode_rewards)
+        #discounted_episode_rewards /= np.std(discounted_episode_rewards)
+        d = discounted_episode_rewards
+        discounted_episode_rewards = ((d-d.min())/(d.max()-d.min()))+1
         return discounted_episode_rewards
 
 
@@ -132,14 +135,19 @@ class PolicyGradient:
         # Initialize parameters
         units_layer_1 = 10
         units_layer_2 = 10
+        units_layer_3 = 10
         units_output_layer = self.n_y
         with tf.name_scope('parameters'):
             W1 = tf.get_variable("W1"+str(player_num), [units_layer_1, self.n_x], initializer = tf.contrib.layers.xavier_initializer(seed=1))
             b1 = tf.get_variable("b1"+str(player_num), [units_layer_1, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
             W2 = tf.get_variable("W2"+str(player_num), [units_layer_2, units_layer_1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
             b2 = tf.get_variable("b2"+str(player_num), [units_layer_2, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
-            W3 = tf.get_variable("W3"+str(player_num), [self.n_y, units_layer_2], initializer = tf.contrib.layers.xavier_initializer(seed=1))
-            b3 = tf.get_variable("b3"+str(player_num), [self.n_y, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+            
+            W3 = tf.get_variable("W3"+str(player_num), [units_layer_3, units_layer_2], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+            b3 = tf.get_variable("b3"+str(player_num), [units_layer_3, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+            
+            W4 = tf.get_variable("W4"+str(player_num), [self.n_y, units_layer_3], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+            b4 = tf.get_variable("b4"+str(player_num), [self.n_y, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
 
         # Forward prop
         with tf.name_scope('layer_1'):
@@ -151,11 +159,14 @@ class PolicyGradient:
         with tf.name_scope('layer_3'):
             Z3 = tf.add(tf.matmul(W3, A2), b3)
             A3 = tf.nn.softmax(Z3)
+        with tf.name_scope('layer_4'):
+            Z4 = tf.add(tf.matmul(W4, A3), b4)
+            A4 = tf.nn.softmax(Z4)
 
         # Softmax outputs, we need to transpose as tensorflow nn functions expects them in this shape
-        logits = tf.transpose(Z3)
+        logits = tf.transpose(Z4)
         labels = tf.transpose(self.Y)
-        self.outputs_softmax = tf.nn.softmax(logits, name='A3')
+        self.outputs_softmax = tf.nn.softmax(logits, name='A4')
 
         with tf.name_scope('loss'):
             neg_log_prob = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels)
