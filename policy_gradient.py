@@ -106,7 +106,7 @@ class PolicyGradient:
         # Save checkpoint
         if self.save_path is not None:
             save_path = self.saver.save(self.sess, self.save_path+str(episode))
-            print("Model saved in file: %s" % save_path)
+            #print("Model saved in file: %s" % save_path)
 
         return discounted_episode_rewards_norm
 

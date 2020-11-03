@@ -10,10 +10,9 @@ if __name__ == "__main__":
     number_of_players=2
     number_of_pieces=4
     # Load checkpoint
-    load_version =12
+    load_version =14
     save_version = load_version+1
-    load_path = "output/weights/ludo/{}/ludo-v2.ckpt".format(load_version)
-    load_path = None
+    load_path = "output/weights/ludo/{}/ludo-v2.ckpt".format(load_version)+str(99999)
     save_path = "output/weights/ludo/{}/ludo-v2.ckpt".format(save_version)
     
     PG_dict = {}
@@ -30,7 +29,7 @@ if __name__ == "__main__":
         )
     
         PG_dict[i] = pg
-    EPISODES = 1000
+    EPISODES = 10000
     ghost_players = list(reversed(range(0, 4)))[:-number_of_players]
     players = list(reversed(range(0, 4)))[-number_of_players:]
     winner = None
@@ -57,7 +56,7 @@ if __name__ == "__main__":
                 elif player_i == 1:
                     observation = np.vstack((player_pieces[:,np.newaxis],\
                                             enemy_pieces[0][:,np.newaxis]))
-                    
+                
                 observation = np.vstack((observation,dice))
                 observation = observation.reshape([(number_of_players*number_of_pieces)+1,])
           
@@ -81,12 +80,14 @@ if __name__ == "__main__":
                 if there_is_a_winner:
                     if episode%10000 == 0:
                         print("saving the game")
-                        g.save_hist_video("test"+"game.avi")
+                        g.save_hist_video(str(episode)+"game.avi")
                     winner = player_i
                     break
-
+                    
+            #this is where the agents are leanring
             if there_is_a_winner:
                 for i in range(number_of_players):
+                    break
                     # 5. Train neural network
                     PG = PG_dict[i]
                     try:
