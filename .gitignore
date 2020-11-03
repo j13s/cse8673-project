@@ -1,0 +1,5 @@
+# Adapted from
+# https://github.com/mathiasbynens/dotfiles/blob/ed0019b7f87828aad94a94665c198b556bd7be02/.gitignore
+# Compiled Python files
+*.pyc
+
