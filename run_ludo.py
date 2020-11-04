@@ -70,7 +70,7 @@ if __name__ == "__main__":
                         PG.store_transition(observation, action, reward)
                 else:
                     action = None
-
+                pdb.set_trace()
                 try:
                     _, _, _, _, _, there_is_a_winner = g.answer_observation(action)
                 except e:
