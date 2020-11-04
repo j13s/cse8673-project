@@ -25,6 +25,7 @@ class PolicyGradient:
         self.gamma = reward_decay
 
         self.save_path = None
+        
         if save_path is not None:
             self.save_path = save_path
 
@@ -104,9 +105,9 @@ class PolicyGradient:
         self.episode_observations, self.episode_actions, self.episode_rewards  = [], [], []
 
         # Save checkpoint
-        if self.save_path is not None:
+        if self.save_path is not None and episode%1000 == 0:
             save_path = self.saver.save(self.sess, self.save_path+str(episode))
-            #print("Model saved in file: %s" % save_path)
+            print("Model saved in file: %s" % save_path)
 
         return discounted_episode_rewards_norm
 

@@ -5,18 +5,19 @@ import numpy as np
 import time
 import ludopy
 import pdb
+from collections import defaultdict
 
 if __name__ == "__main__":
     number_of_players=2
     number_of_pieces=4
     # Load checkpoint
-    load_version =14
+    load_version =12
     save_version = load_version+1
-    load_path = "output/weights/ludo/{}/ludo-v2.ckpt".format(load_version)+str(99999)
+    load_path = "output/weights/ludo/{}/ludo-v2.ckpt".format(load_version)+str(29000)
     save_path = "output/weights/ludo/{}/ludo-v2.ckpt".format(save_version)
-    
     PG_dict = {}
     reward = -1000
+    
     for i in range(number_of_players):
         pg = PolicyGradient(
             n_x = (number_of_players*number_of_pieces) + 1,   #input layer size
@@ -29,10 +30,11 @@ if __name__ == "__main__":
         )
     
         PG_dict[i] = pg
-    EPISODES = 10000
+    EPISODES = 50000
     ghost_players = list(reversed(range(0, 4)))[:-number_of_players]
     players = list(reversed(range(0, 4)))[-number_of_players:]
     winner = None
+    winnerCount = defaultdict(int)
     for episode in range(EPISODES):
         if episode%500 == 0 :
             print("episode : ", episode)
@@ -43,7 +45,9 @@ if __name__ == "__main__":
 
         there_is_a_winner = False
         winner = None
+        count = 0
         while True:
+            count += 1
             for i in range(number_of_players):
                 PG = PG_dict[i]
                 (dice, move_pieces, player_pieces, enemy_pieces, \
@@ -52,10 +56,10 @@ if __name__ == "__main__":
 
                 if player_i == 0:
                     observation = np.vstack((player_pieces[:,np.newaxis],\
-                                            enemy_pieces[-1][:,np.newaxis]))
+                                            enemy_pieces[0][:,np.newaxis]))
                 elif player_i == 1:
                     observation = np.vstack((player_pieces[:,np.newaxis],\
-                                            enemy_pieces[0][:,np.newaxis]))
+                                            enemy_pieces[-1][:,np.newaxis]))
                 
                 observation = np.vstack((observation,dice))
                 observation = observation.reshape([(number_of_players*number_of_pieces)+1,])
@@ -70,24 +74,22 @@ if __name__ == "__main__":
                         PG.store_transition(observation, action, reward)
                 else:
                     action = None
-                pdb.set_trace()
                 try:
                     _, _, _, _, _, there_is_a_winner = g.answer_observation(action)
                 except e:
                     print(e)
                 
-                
                 if there_is_a_winner:
-                    if episode%10000 == 0:
+                    if episode%1000 == 0:
                         print("saving the game")
-                        g.save_hist_video(str(episode)+"game.avi")
+                        g.save_hist_video("videos/"+str(episode)+"game.avi")
                     winner = player_i
+                    winnerCount[player_i] += 1
                     break
                     
             #this is where the agents are leanring
             if there_is_a_winner:
                 for i in range(number_of_players):
-                    break
                     # 5. Train neural network
                     PG = PG_dict[i]
                     try:
@@ -102,4 +104,4 @@ if __name__ == "__main__":
 
                 break
 
-
+print(winnerCount)

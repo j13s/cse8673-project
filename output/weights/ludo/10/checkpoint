@@ -1,0 +1,6 @@
+model_checkpoint_path: "ludo-v2.ckpt240"
+all_model_checkpoint_paths: "ludo-v2.ckpt236"
+all_model_checkpoint_paths: "ludo-v2.ckpt237"
+all_model_checkpoint_paths: "ludo-v2.ckpt238"
+all_model_checkpoint_paths: "ludo-v2.ckpt239"
+all_model_checkpoint_paths: "ludo-v2.ckpt240"
