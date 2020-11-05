@@ -6,7 +6,7 @@ import time
 import ludopy
 import pdb
 from collections import defaultdict
-import Action
+import util
 
 if __name__ == "__main__":
     number_of_players=2
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     save_path = "output/weights/ludo/{}/ludo-v2.ckpt".format(save_version)
     PG_dict = {}
     reward = -1000
-    act = Action.Action(number_of_players,
+    act = util.Action(number_of_players,
                 number_of_pieces,
                 reward)
     for i in range(number_of_players):
@@ -33,7 +33,7 @@ if __name__ == "__main__":
         )
     
         PG_dict[i] = pg
-    EPISODES = 50001
+    EPISODES = 25001
     ghost_players = list(reversed(range(0, 4)))[:-number_of_players]
     players = list(reversed(range(0, 4)))[-number_of_players:]
     winner = None
@@ -55,8 +55,8 @@ if __name__ == "__main__":
                 PG = PG_dict[i]
                 (dice, move_pieces, player_pieces, enemy_pieces,player_is_a_winner,
                                  there_is_a_winner),player_i = g.get_observation()
-
-                action,_ = act.getAction(PG,
+                
+                action,random = act.getAction(PG,
                                        enemy_pieces,
                                        player_pieces,
                                        move_pieces,
@@ -64,13 +64,13 @@ if __name__ == "__main__":
 
                 try:
                     _, _, _, _, _, there_is_a_winner = g.answer_observation(action)
-                except e:
-                    print(e)
+                except Exception as e:
+                    pdb.set_trace()
                 
                 if there_is_a_winner:
                     if episode%1000 == 0:
                         print("saving the game")
-                        g.save_hist_video("videos/"+str(episode)+"game.avi")
+                        g.save_hist_video("output/videos/"+str(episode)+"game.avi")
                     winner = player_i
                     winnerCount[player_i] += 1
                     break
