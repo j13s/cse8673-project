@@ -6,18 +6,21 @@ import time
 import ludopy
 import pdb
 from collections import defaultdict
+import Action
 
 if __name__ == "__main__":
     number_of_players=2
     number_of_pieces=4
     # Load checkpoint
-    load_version =12
+    load_version =11
     save_version = load_version+1
-    load_path = "output/weights/ludo/{}/ludo-v2.ckpt".format(load_version)+str(29000)
+    load_path = "output/weights/ludo/{}/ludo-v2.ckpt".format(load_version)+str(50000)
     save_path = "output/weights/ludo/{}/ludo-v2.ckpt".format(save_version)
     PG_dict = {}
     reward = -1000
-    
+    act = Action.Action(number_of_players,
+                number_of_pieces,
+                reward)
     for i in range(number_of_players):
         pg = PolicyGradient(
             n_x = (number_of_players*number_of_pieces) + 1,   #input layer size
@@ -30,7 +33,7 @@ if __name__ == "__main__":
         )
     
         PG_dict[i] = pg
-    EPISODES = 50000
+    EPISODES = 50001
     ghost_players = list(reversed(range(0, 4)))[:-number_of_players]
     players = list(reversed(range(0, 4)))[-number_of_players:]
     winner = None
@@ -50,30 +53,15 @@ if __name__ == "__main__":
             count += 1
             for i in range(number_of_players):
                 PG = PG_dict[i]
-                (dice, move_pieces, player_pieces, enemy_pieces, \
-                         player_is_a_winner,there_is_a_winner),\
-                                 player_i = g.get_observation()
+                (dice, move_pieces, player_pieces, enemy_pieces,player_is_a_winner,
+                                 there_is_a_winner),player_i = g.get_observation()
 
-                if player_i == 0:
-                    observation = np.vstack((player_pieces[:,np.newaxis],\
-                                            enemy_pieces[0][:,np.newaxis]))
-                elif player_i == 1:
-                    observation = np.vstack((player_pieces[:,np.newaxis],\
-                                            enemy_pieces[-1][:,np.newaxis]))
-                
-                observation = np.vstack((observation,dice))
-                observation = observation.reshape([(number_of_players*number_of_pieces)+1,])
-          
-                # 1. Choose an action based on observation
-                action = PG.choose_action(observation)
-                #now there will be no None as the output from the policy
+                action,_ = act.getAction(PG,
+                                       enemy_pieces,
+                                       player_pieces,
+                                       move_pieces,
+                                       dice)
 
-                if len(move_pieces):
-                    if action not in move_pieces:
-                        action = move_pieces[np.random.randint(0, len(move_pieces))]
-                        PG.store_transition(observation, action, reward)
-                else:
-                    action = None
                 try:
                     _, _, _, _, _, there_is_a_winner = g.answer_observation(action)
                 except e:
@@ -95,7 +83,8 @@ if __name__ == "__main__":
                     try:
                         if winner == i:
                             PG.episode_rewards = [i+2000 for i in PG.episode_rewards]
-                        discounted_episode_rewards_norm = PG.learn(episode)
+                        discounted_episode_rewards_norm = PG.learn(episode,i,winner)
+                        
                     except Exception as e:
                         print(episode,"---",e)
                         pdb.set_trace()

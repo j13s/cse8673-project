@@ -90,10 +90,11 @@ class PolicyGradient:
         action = np.random.choice(range(len(prob_weights.ravel())), p=prob_weights.ravel())
         return action
 
-    def learn(self,episode):
+    def learn(self,episode,player,winner):
         # Discount and normalize episode reward
         discounted_episode_rewards_norm = self.discount_and_norm_rewards()
-
+        if player != winner:
+            discounted_episode_rewards_norm = -1*discounted_episode_rewards_norm
         # Train on episode
         self.sess.run(self.train_op, feed_dict={
              self.X: np.vstack(self.episode_observations).T,
@@ -118,10 +119,9 @@ class PolicyGradient:
             cumulative = cumulative * self.gamma + self.episode_rewards[t]
             discounted_episode_rewards[t] = cumulative
         discounted_episode_rewards = np.float_(discounted_episode_rewards)
-        #discounted_episode_rewards -= np.mean(discounted_episode_rewards)
-        #discounted_episode_rewards /= np.std(discounted_episode_rewards)
         d = discounted_episode_rewards
         discounted_episode_rewards = ((d-d.min())/(d.max()-d.min()))+1
+        discounted_episode_rewards = discounted_episode_rewards[::-1]
         return discounted_episode_rewards
 
 
