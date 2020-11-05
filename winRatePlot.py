@@ -78,7 +78,7 @@ def winRate(PG):
                     break
             if there_is_a_winner:
                 break
-    return winnerCount,wrongPred,totalMoves
+    return winnerCount,wrongPred/totalMoves*100
 
 PG = PolicyGradient(
     n_x = (number_of_players*number_of_pieces) + 1,   #input layer size
@@ -91,5 +91,6 @@ PG = PolicyGradient(
 )
 for i in range(100):
     preds.append(winRate(PG))
-    print(preds[i])
-    
+    #print(preds[i])
+#pdb.set_trace()
+print(sum([i[-1] for i in preds])/100)
