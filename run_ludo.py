@@ -7,15 +7,19 @@ import ludopy
 import pdb
 from collections import defaultdict
 import util
+import tensorflow as tf
 
-if __name__ == "__main__":
+def train(episode,rewardType=None):
+    
+    tf.reset_default_graph()
     number_of_players=2
     number_of_pieces=4
     # Load checkpoint
     load_version =11
     save_version = load_version+1
-    load_path = "output/weights/ludo/{}/ludo-v2.ckpt".format(load_version)+str(50000)
-    save_path = "output/weights/ludo/{}/ludo-v2.ckpt".format(save_version)
+    #load_path = "output/weights/ludo/{}/ludo-v2.ckpt".format(load_version)
+    load_path = None
+    save_path = "output/weights/ludo/{}/ludo-v2.ckpt".format(rewardType)
     PG_dict = {}
     reward = -1000
     act = util.Action(number_of_players,
@@ -29,11 +33,12 @@ if __name__ == "__main__":
             reward_decay=0.99,
             load_path=load_path,
             save_path=save_path,
-            player_num = i
+            player_num = i,
+            rewardType = rewardType
         )
     
         PG_dict[i] = pg
-    EPISODES = 25001
+    EPISODES = episode
     ghost_players = list(reversed(range(0, 4)))[:-number_of_players]
     players = list(reversed(range(0, 4)))[-number_of_players:]
     winner = None
@@ -70,7 +75,8 @@ if __name__ == "__main__":
                 if there_is_a_winner:
                     if episode%1000 == 0:
                         print("saving the game")
-                        g.save_hist_video("output/videos/"+str(episode)+"game.avi")
+                        g.save_hist_video("output/videos/{}/{}game.avi"
+                                          .format(rewardType,episode))
                     winner = player_i
                     winnerCount[player_i] += 1
                     break
@@ -93,4 +99,4 @@ if __name__ == "__main__":
 
                 break
 
-print(winnerCount)
+    return winnerCount,save_path

@@ -16,8 +16,8 @@ class PolicyGradient:
         reward_decay=0.95,
         load_path=None,
         save_path=None,
-        player_num = ""
-        reverseType = "decay"
+        player_num = "",
+        rewardType = "monte"
     ):
 
         self.n_x = n_x
@@ -26,7 +26,7 @@ class PolicyGradient:
         self.gamma = reward_decay
 
         self.save_path = None
-        self.reverseType = reverseType
+        self.rewardType = rewardType
         if save_path is not None:
             self.save_path = save_path
 
@@ -114,11 +114,11 @@ class PolicyGradient:
         return discounted_episode_rewards_norm
 
     def discount_and_norm_rewards(self):
-        if self.reverseType == "allSame":
+        if self.rewardType == "same":
             if self.episode_rewards[0] > 0:
-                discounted_episode_rewards = np.ones_like(self.episode_rewards)
+                return np.ones_like(self.episode_rewards)
             else:
-                discounted_episode_rewards = np.zeros_like(self.episode_rewards)-1
+                return np.zeros_like(self.episode_rewards)-1
         discounted_episode_rewards = np.zeros_like(self.episode_rewards)
         cumulative = 0
         for t in reversed(range(len(self.episode_rewards))):
@@ -127,7 +127,7 @@ class PolicyGradient:
         discounted_episode_rewards = np.float_(discounted_episode_rewards)
         d = discounted_episode_rewards
         discounted_episode_rewards = ((d-d.min())/(d.max()-d.min()))+1
-        if self.reverseType == "reverse":
+        if self.rewardType == "reverse":
             discounted_episode_rewards = discounted_episode_rewards[::-1]
         
         return discounted_episode_rewards
