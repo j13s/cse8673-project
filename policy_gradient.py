@@ -45,7 +45,7 @@ class PolicyGradient:
         self.sess.run(tf.global_variables_initializer())
 
         # 'Saver' op to save and restore all the variables
-        self.saver = tf.train.Saver()
+        self.saver = tf.train.Saver(max_to_keep=50)
 
         # Restore model
         if load_path is not None:
@@ -108,7 +108,8 @@ class PolicyGradient:
 
         # Save checkpoint
         if self.save_path is not None and episode%1000 == 0:
-            save_path = self.saver.save(self.sess, self.save_path+str(episode))
+            save_path = self.saver.save(self.sess, 
+                                        self.save_path+str(episode))
             print("Model saved in file: %s" % save_path)
 
         return discounted_episode_rewards_norm

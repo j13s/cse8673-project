@@ -10,7 +10,6 @@ import util
 import tensorflow as tf
 
 def train(episode,rewardType=None):
-    
     tf.reset_default_graph()
     number_of_players=2
     number_of_pieces=4
@@ -92,8 +91,8 @@ def train(episode,rewardType=None):
                         discounted_episode_rewards_norm = PG.learn(episode,i,winner)
                         
                     except Exception as e:
-                        print(episode,"---",e)
-                        pdb.set_trace()
+                        print(episode,"---",e,"problem")
+                        #pdb.set_trace()
                         PG.episode_observations, PG.episode_actions, PG.episode_rewards  = [], [], []
                         pass
 
