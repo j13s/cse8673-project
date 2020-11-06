@@ -1,4 +1,5 @@
 import run_ludo
 
 for i in ["reverse","same","monte"]:
-    run_ludo.train(1,i)
+    print("-----------------{}---------------------".format(i))
+    run_ludo.train(50001,i)
