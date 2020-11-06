@@ -45,7 +45,7 @@ class PolicyGradient:
         self.sess.run(tf.global_variables_initializer())
 
         # 'Saver' op to save and restore all the variables
-        self.saver = tf.train.Saver(max_to_keep=50)
+        self.saver = tf.train.Saver(max_to_keep=150)
 
         # Restore model
         if load_path is not None:
