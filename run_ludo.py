@@ -26,7 +26,7 @@ def train(episode,rewardType=None):
                 reward)
     for i in range(number_of_players):
         pg = PolicyGradient(
-            n_x = (number_of_players*number_of_pieces) + 1,   #input layer size
+            n_x = (number_of_players*number_of_pieces) + 5,   #input layer size
             n_y = 5,   #ouput layer size
             learning_rate=0.02,
             reward_decay=0.99,

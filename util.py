@@ -178,8 +178,13 @@ class Action:
                                 enemy_pieces[0][:,np.newaxis]))
         observation = (observation + 1)/60
         observation = np.vstack((observation,self.dice/6))
+        move_pieces = np.ones(4)*-1
+        if len(self.move_pieces):
+            move_pieces[self.move_pieces] = 1
+        observation = np.vstack((observation, move_pieces[:,np.newaxis]))
+        import pdb; pdb.set_trace()
         observation = observation.reshape([(self.num_players*\
-                                            self.num_of_pieces)+1,])
+                                            self.num_of_pieces)+5,])
         action = self.PG.choose_action(observation)
         if not len(self.move_pieces):
             if action == 4:
