@@ -47,6 +47,48 @@ def randwalk(number_of_players=4, number_of_pieces=4):
     return g
 
 
+class State:
+    """Represents the state of the ludo board."""
+
+    def __init__(self, observation=None):
+        game_state = observation[0]
+        self.__player_turn = observation[1]
+
+        self.__die = game_state[0]
+
+        # If there is a winner...
+        if game_state[-1]:
+            # Remember which player won
+            self.__winner = game_state[-2]
+        else:
+            self.__winner = None
+
+        self.__actions = []
+
+        return
+
+    def die(self):
+        return self.__die
+
+    def whose_turn_is_it(self):
+        return self.__player_turn
+
+    def is_there_a_winner(self):
+        return self.__winner is not None
+
+    def who_won(self):
+        return self.__winner
+
+    def actions(self):
+        return self.__actions
+
+    def board_for(self, player=None):
+        return [
+            4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+        ]
+
 BOARD = 0
 DIE = -3
 PLAYER = -2
