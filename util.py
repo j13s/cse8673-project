@@ -181,11 +181,22 @@ class Action:
         observation = observation.reshape([(self.num_players*\
                                             self.num_of_pieces)+1,])
         action = self.PG.choose_action(observation)
-        if action not in self.move_pieces:
-            action = self.__randomAction()
-            random = True
+        if not len(self.move_pieces):
+            if action == 4:
+                self.PG.store_transition(observation, action, self.reward)
+                action == None
+            else:
+                reward = 2*self.reward
+                self.PG.store_transition(observation, action, reward)
+                action = None
         else:
-            self.PG.store_transition(observation, action, self.reward)
+            if action not in self.move_pieces:
+                reward = 2*self.reward
+                self.PG.store_transition(observation, action, reward)
+                action = self.__randomAction()
+                random = True
+            else:
+                self.PG.store_transition(observation, action, self.reward)
         return action, random
     
     def __getEnemy(self):

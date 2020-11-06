@@ -27,7 +27,7 @@ def train(episode,rewardType=None):
     for i in range(number_of_players):
         pg = PolicyGradient(
             n_x = (number_of_players*number_of_pieces) + 1,   #input layer size
-            n_y = 4,   #ouput layer size
+            n_y = 5,   #ouput layer size
             learning_rate=0.02,
             reward_decay=0.99,
             load_path=load_path,
@@ -72,10 +72,6 @@ def train(episode,rewardType=None):
                     pdb.set_trace()
                 
                 if there_is_a_winner:
-                    if episode%1000 == 0:
-                        print("saving the game")
-                        g.save_hist_video("output/videos/{}/{}game.avi"
-                                          .format(rewardType,episode))
                     winner = player_i
                     winnerCount[player_i] += 1
                     break
@@ -87,12 +83,12 @@ def train(episode,rewardType=None):
                     PG = PG_dict[i]
                     try:
                         if winner == i:
-                            PG.episode_rewards = [i+2000 for i in PG.episode_rewards]
+                            PG.episode_rewards = [i+2000 if i == -1000 else i for i in PG.episode_rewards]
+
                         discounted_episode_rewards_norm = PG.learn(episode,i,winner)
                         
                     except Exception as e:
                         print(episode,"---",e,"problem")
-                        #pdb.set_trace()
                         PG.episode_observations, PG.episode_actions, PG.episode_rewards  = [], [], []
                         pass
 

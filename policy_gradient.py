@@ -93,9 +93,7 @@ class PolicyGradient:
 
     def learn(self,episode,player,winner):
         # Discount and normalize episode reward
-        discounted_episode_rewards_norm = self.discount_and_norm_rewards()
-        if player != winner:
-            discounted_episode_rewards_norm = -1*discounted_episode_rewards_norm
+        discounted_episode_rewards_norm = self.discount_and_norm_rewards(player,winner)
         # Train on episode
         self.sess.run(self.train_op, feed_dict={
              self.X: np.vstack(self.episode_observations).T,
@@ -114,12 +112,11 @@ class PolicyGradient:
 
         return discounted_episode_rewards_norm
 
-    def discount_and_norm_rewards(self):
-        if self.rewardType == "same":
-            if self.episode_rewards[0] > 0:
-                return np.ones_like(self.episode_rewards)
-            else:
-                return np.zeros_like(self.episode_rewards)-1
+    def discount_and_norm_rewards(self,player,winner):
+
+        self.episode_rewards = np.array(self.episode_rewards)
+        illegalIdx = np.where(self.episode_rewards == -2000)
+        legalIdx = np.where(self.episode_rewards != -2000)
         discounted_episode_rewards = np.zeros_like(self.episode_rewards)
         cumulative = 0
         for t in reversed(range(len(self.episode_rewards))):
@@ -128,11 +125,10 @@ class PolicyGradient:
         discounted_episode_rewards = np.float_(discounted_episode_rewards)
         d = discounted_episode_rewards
         discounted_episode_rewards = ((d-d.min())/(d.max()-d.min()))+1
-        if self.rewardType == "reverse":
-            discounted_episode_rewards = discounted_episode_rewards[::-1]
-        
+        if player != winner:
+            discounted_episode_rewards = discounted_episode_rewards*-1
+        discounted_episode_rewards[illegalIdx] = discounted_episode_rewards[illegalIdx]-3
         return discounted_episode_rewards
-
 
     def build_network(self,player_num):
         # Create placeholders
@@ -145,18 +141,23 @@ class PolicyGradient:
         units_layer_1 = 10
         units_layer_2 = 10
         units_layer_3 = 10
+        units_layer_4 = 10
         units_output_layer = self.n_y
         with tf.name_scope('parameters'):
             W1 = tf.get_variable("W1"+str(player_num), [units_layer_1, self.n_x], initializer = tf.contrib.layers.xavier_initializer(seed=1))
             b1 = tf.get_variable("b1"+str(player_num), [units_layer_1, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+
             W2 = tf.get_variable("W2"+str(player_num), [units_layer_2, units_layer_1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
             b2 = tf.get_variable("b2"+str(player_num), [units_layer_2, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
             
             W3 = tf.get_variable("W3"+str(player_num), [units_layer_3, units_layer_2], initializer = tf.contrib.layers.xavier_initializer(seed=1))
             b3 = tf.get_variable("b3"+str(player_num), [units_layer_3, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+
+            W4 = tf.get_variable("W4"+str(player_num), [units_layer_4, units_layer_3], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+            b4 = tf.get_variable("b4"+str(player_num), [units_layer_4, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
             
-            W4 = tf.get_variable("W4"+str(player_num), [self.n_y, units_layer_3], initializer = tf.contrib.layers.xavier_initializer(seed=1))
-            b4 = tf.get_variable("b4"+str(player_num), [self.n_y, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+            W5 = tf.get_variable("W5"+str(player_num), [self.n_y, units_layer_4], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+            b5 = tf.get_variable("b5"+str(player_num), [self.n_y, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
 
         # Forward prop
         with tf.name_scope('layer_1'):
@@ -167,15 +168,18 @@ class PolicyGradient:
             A2 = tf.nn.relu(Z2)
         with tf.name_scope('layer_3'):
             Z3 = tf.add(tf.matmul(W3, A2), b3)
-            A3 = tf.nn.softmax(Z3)
+            A3 = tf.nn.relu(Z3)
         with tf.name_scope('layer_4'):
             Z4 = tf.add(tf.matmul(W4, A3), b4)
-            A4 = tf.nn.softmax(Z4)
+            A4 = tf.nn.relu(Z4)
+        with tf.name_scope('layer_5'):
+            Z5 = tf.add(tf.matmul(W5, A4), b5)
+            A5 = tf.nn.softmax(Z5)
 
         # Softmax outputs, we need to transpose as tensorflow nn functions expects them in this shape
-        logits = tf.transpose(Z4)
+        logits = tf.transpose(Z5)
         labels = tf.transpose(self.Y)
-        self.outputs_softmax = tf.nn.softmax(logits, name='A4')
+        self.outputs_softmax = tf.nn.softmax(logits, name='A5')
 
         with tf.name_scope('loss'):
             neg_log_prob = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels)
@@ -192,3 +196,4 @@ class PolicyGradient:
         plt.ylabel('Cost')
         plt.xlabel('Training Steps')
         plt.show()
+
