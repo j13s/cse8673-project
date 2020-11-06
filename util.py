@@ -186,6 +186,7 @@ class Action:
                 self.PG.store_transition(observation, action, self.reward)
                 action == None
             else:
+                random = True
                 reward = 2*self.reward
                 self.PG.store_transition(observation, action, reward)
                 action = None
