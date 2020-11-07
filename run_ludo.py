@@ -24,19 +24,16 @@ def train(episode,rewardType=None):
     act = util.Action(number_of_players,
                 number_of_pieces,
                 reward)
-    for i in range(number_of_players):
-        pg = PolicyGradient(
-            n_x = (number_of_players*number_of_pieces) + 5,   #input layer size
-            n_y = 5,   #ouput layer size
-            learning_rate=0.02,
-            reward_decay=0.99,
-            load_path=load_path,
-            save_path=save_path,
-            player_num = i,
-            rewardType = rewardType
-        )
-    
-        PG_dict[i] = pg
+    PG = PolicyGradient(
+        n_x = (number_of_players*number_of_pieces) + 5,   #input layer size
+        n_y = 5,   #ouput layer size
+        learning_rate=0.02,
+        reward_decay=0.99,
+        load_path=load_path,
+        save_path=save_path,
+        player_num = 0,
+        rewardType = rewardType
+    )
     EPISODES = episode
     ghost_players = list(reversed(range(0, 4)))[:-number_of_players]
     players = list(reversed(range(0, 4)))[-number_of_players:]
@@ -56,42 +53,29 @@ def train(episode,rewardType=None):
         while True:
             count += 1
             for i in range(number_of_players):
-                PG = PG_dict[i]
-                (dice, move_pieces, player_pieces, enemy_pieces,player_is_a_winner,
-                                 there_is_a_winner),player_i = g.get_observation()
-                
-                action,random = act.getAction(PG,
-                                       enemy_pieces,
-                                       player_pieces,
-                                       move_pieces,
-                                       dice)
+                if i == 0:
+                    (dice, move_pieces, player_pieces, enemy_pieces,player_is_a_winner,
+                                     there_is_a_winner),player_i = g.get_observation()
 
-                try:
+                    action,random = act.getAction(PG,
+                                           enemy_pieces,
+                                           player_pieces,
+                                           move_pieces,
+                                           dice)
+
                     _, _, _, _, _, there_is_a_winner = g.answer_observation(action)
-                except Exception as e:
-                    pdb.set_trace()
+                else:
+                    action = act.getAction(move_pieces=move_pieces)
                 
                 if there_is_a_winner:
                     winner = player_i
                     winnerCount[player_i] += 1
                     break
-                    
+
             #this is where the agents are leanring
             if there_is_a_winner:
-                for i in range(number_of_players):
-                    # 5. Train neural network
-                    PG = PG_dict[i]
-                    try:
-                        if winner == i:
-                            PG.episode_rewards = [i+2000 if i == -1000 else i for i in PG.episode_rewards]
+                if winner == 0:
+                    PG.episode_rewards = [i+2000 if i == -1000 else i for i in PG.episode_rewards]
 
-                        discounted_episode_rewards_norm = PG.learn(episode,i,winner)
-                        
-                    except Exception as e:
-                        print(episode,"---",e,"problem")
-                        PG.episode_observations, PG.episode_actions, PG.episode_rewards  = [], [], []
-                        pass
-
-                break
-
+                discounted_episode_rewards_norm = PG.learn(episode,0,winner)
     return winnerCount,save_path

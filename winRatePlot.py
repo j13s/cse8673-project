@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 import util
 import tensorflow as tf
 
-def winRate(load_path,episodes):
+def winRate(load_path,episodes,player_num):
     tf.reset_default_graph()
     number_of_players=2
     number_of_pieces=4
@@ -25,13 +25,13 @@ def winRate(load_path,episodes):
     winnerCount = defaultdict(int)
     print(load_path,"---")
     PG = PolicyGradient(
-        n_x = (number_of_players*number_of_pieces) + 1,   #input layer size
-        n_y = 4,   #ouput layer size
+        n_x = (number_of_players*number_of_pieces) + 5,   #input layer size
+        n_y = 5,   #ouput layer size
         learning_rate=0.02,
         reward_decay=0.99,
         load_path=load_path,
         save_path=None,
-        player_num=1
+        player_num=player_num
     )
     preds = list()
     for episode in range(EPISODES):

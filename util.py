@@ -182,7 +182,7 @@ class Action:
         if len(self.move_pieces):
             move_pieces[self.move_pieces] = 1
         observation = np.vstack((observation, move_pieces[:,np.newaxis]))
-        import pdb; pdb.set_trace()
+
         observation = observation.reshape([(self.num_players*\
                                             self.num_of_pieces)+5,])
         action = self.PG.choose_action(observation)
