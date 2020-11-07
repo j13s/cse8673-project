@@ -18,7 +18,6 @@ class TestHistory(unittest.TestCase):
 
     def test_number_of_rounds(self):
         history = History(frames=self.history)
-        print(self.history[:8])
 
         self.assertEqual(71, len(history.rounds()))
 
