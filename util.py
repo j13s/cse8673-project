@@ -64,7 +64,7 @@ class State:
         # If there is a winner...
         if observation[-1]:
             # Remember which player won
-            self.__winner = observation[-2]
+            self.__winner = for_player
         else:
             self.__winner = None
 
@@ -113,11 +113,18 @@ class State:
         turn = self.whose_turn_is_it()
         if 0 == turn:
             if 0 == for_player:
-                for i in player_pieces:
-                    board[i] += 1
-            if 1 == for_player:
-                for i in enemy_pieces[0]:
-                    board[i] += 1
+                for position in player_pieces:
+                    board[position] += 1
+            elif 1 == for_player:
+                for position in enemy_pieces[0]:
+                    board[position] += 1
+        elif 1 == turn:
+            if 0 == for_player:
+                for position in enemy_pieces[2]:
+                    board[position] += 1
+            elif 1 == for_player:
+                for position in player_pieces:
+                    board[position] += 1
 
         return board
 
