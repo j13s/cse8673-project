@@ -50,20 +50,38 @@ def randwalk(number_of_players=4, number_of_pieces=4):
 class State:
     """Represents the state of the ludo board."""
 
-    def __init__(self, observation=None):
-        game_state = observation[0]
-        self.__player_turn = observation[1]
+    board = [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+        ]
 
-        self.__die = game_state[0]
+    def __init__(self, observation=None, for_player=None):
+        self.__player_turn = for_player
+
+        self.__die = observation[0]
 
         # If there is a winner...
-        if game_state[-1]:
+        if observation[-1]:
             # Remember which player won
-            self.__winner = game_state[-2]
+            self.__winner = observation[-2]
         else:
             self.__winner = None
 
-        self.__actions = []
+        self.__actions = observation[1]
+
+        self.__boards = [
+            self.__compute_board_for(
+                player_pieces=observation[2],
+                enemy_pieces=observation[3],
+                for_player=0,
+            ),
+            self.__compute_board_for(
+                player_pieces=observation[2],
+                enemy_pieces=observation[3],
+                for_player=1,
+            )
+        ]
 
         return
 
@@ -83,11 +101,26 @@ class State:
         return self.__actions
 
     def board_for(self, player=None):
-        return [
-            4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-        ]
+        return copy.copy(self.__boards[player])
+
+    def __compute_board_for(
+        self,
+        player_pieces=None,
+        enemy_pieces=None,
+        for_player=None):
+        board = copy.copy(__class__.board)
+
+        turn = self.whose_turn_is_it()
+        if 0 == turn:
+            if 0 == for_player:
+                for i in player_pieces:
+                    board[i] += 1
+            if 1 == for_player:
+                for i in enemy_pieces[0]:
+                    board[i] += 1
+
+        return board
+
 
 BOARD = 0
 DIE = -3
