@@ -6,7 +6,7 @@ import numpy as np
 import ludopy
 from util import State
 
-class TestState(unittest.TestCase):
+class TestStateWith2Players(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Seed the random number generator to a known state

@@ -80,7 +80,17 @@ class State:
                 player_pieces=observation[2],
                 enemy_pieces=observation[3],
                 for_player=1,
-            )
+            ),
+            self.__compute_board_for(
+                player_pieces=observation[2],
+                enemy_pieces=observation[3],
+                for_player=2,
+            ),
+            self.__compute_board_for(
+                player_pieces=observation[2],
+                enemy_pieces=observation[3],
+                for_player=3,
+            ),
         ]
 
         return
@@ -118,6 +128,12 @@ class State:
             elif 1 == for_player:
                 for position in enemy_pieces[0]:
                     board[position] += 1
+            elif 2 == for_player:
+                for position in enemy_pieces[1]:
+                    board[position] += 1
+            elif 3 == for_player:
+                for position in enemy_pieces[2]:
+                    board[position] += 1
         elif 1 == turn:
             if 0 == for_player:
                 for position in enemy_pieces[2]:
@@ -125,6 +141,39 @@ class State:
             elif 1 == for_player:
                 for position in player_pieces:
                     board[position] += 1
+            elif 2 == for_player:
+                for position in enemy_pieces[0]:
+                    board[position] += 1
+            elif 3 == for_player:
+                for position in enemy_pieces[1]:
+                    board[position] += 1
+        elif 2 == turn:
+            if 0 == for_player:
+                for position in enemy_pieces[1]:
+                    board[position] += 1
+            elif 1 == for_player:
+                for position in enemy_pieces[2]:
+                    board[position] += 1
+            elif 2 == for_player:
+                for position in player_pieces:
+                    board[position] += 1
+            elif 3 == for_player:
+                for position in enemy_pieces[0]:
+                    board[position] += 1
+        elif 3 == turn:
+            if 0 == for_player:
+                for position in enemy_pieces[0]:
+                    board[position] += 1
+            elif 1 == for_player:
+                for position in enemy_pieces[1]:
+                    board[position] += 1
+            elif 2 == for_player:
+                for position in enemy_pieces[2]:
+                    board[position] += 1
+            elif 3 == for_player:
+                for position in player_pieces:
+                    board[position] += 1
+
 
         return board
 
