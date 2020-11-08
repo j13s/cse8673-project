@@ -50,12 +50,6 @@ def randwalk(number_of_players=4, number_of_pieces=4):
 class State:
     """Represents the state of the ludo board."""
 
-    board = [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-        ]
-
     def __init__(self, observation=None, for_player=None):
         self.__player_turn = for_player
 
@@ -118,62 +112,46 @@ class State:
         player_pieces=None,
         enemy_pieces=None,
         for_player=None):
-        board = copy.copy(__class__.board)
+
+        board = None
 
         turn = self.whose_turn_is_it()
         if 0 == turn:
             if 0 == for_player:
-                for position in player_pieces:
-                    board[position] += 1
+                board = copy.copy(player_pieces)
             elif 1 == for_player:
-                for position in enemy_pieces[0]:
-                    board[position] += 1
+                board = copy.copy(enemy_pieces[0])
             elif 2 == for_player:
-                for position in enemy_pieces[1]:
-                    board[position] += 1
+                board = copy.copy(enemy_pieces[1])
             elif 3 == for_player:
-                for position in enemy_pieces[2]:
-                    board[position] += 1
+                board = copy.copy(enemy_pieces[2])
         elif 1 == turn:
             if 0 == for_player:
-                for position in enemy_pieces[2]:
-                    board[position] += 1
+                board = enemy_pieces[2]
             elif 1 == for_player:
-                for position in player_pieces:
-                    board[position] += 1
+                board = player_pieces
             elif 2 == for_player:
-                for position in enemy_pieces[0]:
-                    board[position] += 1
+                board = enemy_pieces[0]
             elif 3 == for_player:
-                for position in enemy_pieces[1]:
-                    board[position] += 1
+                board = enemy_pieces[1]
         elif 2 == turn:
             if 0 == for_player:
-                for position in enemy_pieces[1]:
-                    board[position] += 1
+                board = enemy_pieces[1]
             elif 1 == for_player:
-                for position in enemy_pieces[2]:
-                    board[position] += 1
+                board = enemy_pieces[2]
             elif 2 == for_player:
-                for position in player_pieces:
-                    board[position] += 1
+                board = player_pieces
             elif 3 == for_player:
-                for position in enemy_pieces[0]:
-                    board[position] += 1
+                board = enemy_pieces[0]
         elif 3 == turn:
             if 0 == for_player:
-                for position in enemy_pieces[0]:
-                    board[position] += 1
+                board = enemy_pieces[0]
             elif 1 == for_player:
-                for position in enemy_pieces[1]:
-                    board[position] += 1
+                board = enemy_pieces[1]
             elif 2 == for_player:
-                for position in enemy_pieces[2]:
-                    board[position] += 1
+                board = enemy_pieces[2]
             elif 3 == for_player:
-                for position in player_pieces:
-                    board[position] += 1
-
+                board = player_pieces
 
         return board
 

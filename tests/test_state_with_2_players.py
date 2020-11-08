@@ -6,6 +6,8 @@ import numpy as np
 import ludopy
 from util import State
 
+from tests.util import test_state_attributes
+
 class TestStateWith2Players(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -22,48 +24,83 @@ class TestStateWith2Players(unittest.TestCase):
 
         state = State(observation=obs[0], for_player=obs[-1])
 
-        self.assertEqual(5, state.die())
-        self.assertEqual(0, state.whose_turn_is_it())
-        self.assertIsNone(state.who_won())
-        np.testing.assert_equal([], state.actions())
-
-        self.__test_initial_state(state)
+        test_state_attributes(
+            test=self,
+            state=state,
+            die=5,
+            whose_turn=0,
+            who_won=None,
+            actions=[],
+            player_1_board=[0, 0, 0, 0],
+            player_2_board=[0, 0, 0, 0],
+            player_3_board=[0, 0, 0, 0],
+            player_4_board=[0, 0, 0, 0],
+        )
 
         state = State(
             observation=self.__g.answer_observation(0), for_player=obs[-1]
         )
 
-        self.assertEqual(5, state.die())
-
-        self.__test_initial_state(state)
+        test_state_attributes(
+            test=self,
+            state=state,
+            die=5,
+            whose_turn=0,
+            who_won=None,
+            actions=[],
+            player_1_board=[0, 0, 0, 0],
+            player_2_board=[0, 0, 0, 0],
+        )
 
         obs = self.__g.get_observation()
 
         state = State(observation=obs[0], for_player=obs[-1])
 
-        self.assertEqual(6, state.die())
-        self.assertEqual(0, state.whose_turn_is_it())
-        np.testing.assert_equal([0, 1, 2, 3], state.actions())
+        test_state_attributes(
+            test=self,
+            state=state,
+            die=6,
+            whose_turn=0,
+            who_won=None,
+            actions=[0, 1, 2, 3],
+            player_1_board=[0, 0, 0, 0],
+            player_2_board=[0, 0, 0, 0],
+        )
 
-        self.__test_initial_board_state_for(state, player=0)
-        self.__test_initial_board_state_for(state, player=1)
+        g = copy.deepcopy(self.__g)
+        resultant_state = State(
+            observation=g.answer_observation(0),
+            for_player=state.whose_turn_is_it(),
+        )
 
-        for action in state.actions():
-            g = copy.deepcopy(self.__g)
-            resultant_state = State(
-                observation=g.answer_observation(action),
-                for_player=state.whose_turn_is_it(),
-            )
-            self.assertEqual(
-                [
-                    3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 
-                ],
-                resultant_state.board_for(player=0)
-            )
-            self.__test_initial_board_state_for(resultant_state, player=1)
+        test_state_attributes(
+            test=self,
+            state=resultant_state,
+            die=6,
+            whose_turn=0,
+            who_won=None,
+            actions=[0, 1, 2, 3],
+            player_1_board=[1, 0, 0, 0],
+            player_2_board=[0, 0, 0, 0],
+        )
+
+        g = copy.deepcopy(self.__g)
+        resultant_state = State(
+            observation=g.answer_observation(1),
+            for_player=state.whose_turn_is_it(),
+        )
+
+        test_state_attributes(
+            test=self,
+            state=resultant_state,
+            die=6,
+            whose_turn=0,
+            who_won=None,
+            actions=[0, 1, 2, 3],
+            player_1_board=[0, 1, 0, 0],
+            player_2_board=[0, 0, 0, 0],
+        )
+
 
     def test_second_move(self):
         # Test against two-players, two pieces per player
@@ -76,26 +113,15 @@ class TestStateWith2Players(unittest.TestCase):
         obs = self.__g.get_observation()
         state = State(observation=obs[0], for_player=obs[-1])
 
-        self.assertEqual(1, state.die())
-        self.assertEqual(1, state.whose_turn_is_it())
-        np.testing.assert_equal([], state.actions())
-
-        self.assertEqual(
-            [
-                3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            ],
-            state.board_for(player=0)
-        )
-
-        self.assertEqual(
-            [
-                4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            ],
-            state.board_for(player=1)
+        test_state_attributes(
+            test=self,
+            state=state,
+            die=1,
+            whose_turn=1,
+            who_won=None,
+            actions=[],
+            player_1_board=[1, 0, 0, 0],
+            player_2_board=[0, 0, 0, 0],
         )
 
         # Can't take an action, so just do something.
@@ -104,26 +130,15 @@ class TestStateWith2Players(unittest.TestCase):
             for_player=state.whose_turn_is_it(),
         )
 
-        self.assertEqual(1, state.die())
-        self.assertEqual(1, state.whose_turn_is_it())
-        np.testing.assert_equal([], state.actions())
-
-        self.assertEqual(
-            [
-                3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            ],
-            state.board_for(player=0)
-        )
-
-        self.assertEqual(
-            [
-                4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            ],
-            state.board_for(player=1)
+        test_state_attributes(
+            test=self,
+            state=state,
+            die=1,
+            whose_turn=1,
+            who_won=None,
+            actions=[],
+            player_1_board=[1, 0, 0, 0],
+            player_2_board=[0, 0, 0, 0],
         )
 
         ######################################################################
@@ -132,28 +147,15 @@ class TestStateWith2Players(unittest.TestCase):
             obs = self.__g.get_observation()
             state = State(observation=obs[0], for_player=obs[-1])
 
-            self.assertEqual(4, state.die())
-            self.assertEqual(1, state.whose_turn_is_it())
-            np.testing.assert_equal([], state.actions())
-
-            self.assertEqual(
-                [
-                    3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 
-                ],
-                state.board_for(player=0)
-            )
-
-            self.assertEqual(
-                [
-                    4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 
-                ],
-                state.board_for(player=1)
+            test_state_attributes(
+                test=self,
+                state=state,
+                die=4,
+                whose_turn=1,
+                who_won=None,
+                actions=[],
+                player_1_board=[1, 0, 0, 0],
+                player_2_board=[0, 0, 0, 0],
             )
 
             # Can't take an action, so just do something.
@@ -162,55 +164,32 @@ class TestStateWith2Players(unittest.TestCase):
                 for_player=state.whose_turn_is_it(),
             )
 
-            self.assertEqual(4, state.die())
-            self.assertEqual(1, state.whose_turn_is_it())
-            np.testing.assert_equal([], state.actions())
-
-            self.assertEqual(
-                [
-                    3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 
-                ],
-                state.board_for(player=0)
+            test_state_attributes(
+                test=self,
+                state=state,
+                die=4,
+                whose_turn=1,
+                who_won=None,
+                actions=[],
+                player_1_board=[1, 0, 0, 0],
+                player_2_board=[0, 0, 0, 0],
             )
 
-            self.assertEqual(
-                [
-                    4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 
-                ],
-                state.board_for(player=1)
-            )
 
         ######################################################################
 
         obs = self.__g.get_observation()
         state = State(observation=obs[0], for_player=obs[-1])
 
-        self.assertEqual(2, state.die())
-        self.assertEqual(0, state.whose_turn_is_it())
-        np.testing.assert_equal([0], state.actions())
-
-        self.assertEqual(
-            [
-                3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            ],
-            state.board_for(player=0)
-        )
-
-        self.assertEqual(
-            [
-                4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            ],
-            state.board_for(player=1)
+        test_state_attributes(
+            test=self,
+            state=state,
+            die=2,
+            whose_turn=0,
+            who_won=None,
+            actions=[0],
+            player_1_board=[1, 0, 0, 0],
+            player_2_board=[0, 0, 0, 0],
         )
 
         state = State(
@@ -218,28 +197,16 @@ class TestStateWith2Players(unittest.TestCase):
             for_player=state.whose_turn_is_it(),
         )
 
-        self.assertEqual(2, state.die())
-        self.assertEqual(0, state.whose_turn_is_it())
-        np.testing.assert_equal([0], state.actions())
-
-        self.assertEqual(
-            [
-                3, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            ],
-            state.board_for(player=0)
+        test_state_attributes(
+            test=self,
+            state=state,
+            die=2,
+            whose_turn=0,
+            who_won=None,
+            actions=[0],
+            player_1_board=[3, 0, 0, 0],
+            player_2_board=[0, 0, 0, 0],
         )
-
-        self.assertEqual(
-            [
-                4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            ],
-            state.board_for(player=1)
-        )
-
 
     def test_winner(self):
         there_is_not_a_winner = True
@@ -261,26 +228,17 @@ class TestStateWith2Players(unittest.TestCase):
             there_is_not_a_winner = not state.is_there_a_winner()
 
         self.assertTrue(state.is_there_a_winner())
-        self.assertEqual(0, state.who_won())
 
-        self.assertEqual(
-            [
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 
-            ],
-            state.board_for(player=0)
+        test_state_attributes(
+            test=self,
+            state=state,
+            die=4,
+            whose_turn=0,
+            who_won=0,
+            actions=[],
+            player_1_board=[59, 59, 59, 59],
+            player_2_board=[59, 54, 53, 26],
         )
-
-        self.assertEqual(
-            [
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 
-            ],
-            state.board_for(player=1)
-        )
-
 
     def tearDown(self):
         del self.__g
@@ -289,17 +247,3 @@ class TestStateWith2Players(unittest.TestCase):
     def tearDownClass(cls):
         np.random.set_state(cls.initial_np_state)
 
-    def __test_initial_state(self, state):
-        self.__test_initial_board_state_for(state, player=0)
-        self.__test_initial_board_state_for(state, player=1)
-
-        self.assertIsNone(state.who_won())
-        self.assertFalse(state.is_there_a_winner())
-        self.assertEqual(0, state.whose_turn_is_it())
-
-    def __test_initial_board_state_for(self, state, player=None):
-        self.assertEqual([
-            4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-        ], state.board_for(player=player))
