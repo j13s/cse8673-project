@@ -3,6 +3,7 @@
 #
 # Takes a LUDOpy history file from STDIN
 
+import argparse
 import io
 import sys
 
@@ -21,7 +22,23 @@ def main():
     with io.BytesIO(np_magic + np_data) as f_np:
         history = np.load(f_np, allow_pickle=True)
 
-    save_hist_video(sys.argv[1], history) 
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--fps",
+        help="Framerate of Ludo video",
+        type=int,
+        default=8
+    )
+    parser.add_argument(
+        "--output-file",
+        help="Filename of the output file",
+        type=str,
+        default="game.mp4",
+    )
+    args = parser.parse_args()
+
+    save_hist_video(args.output_file, history, fps=args.fps) 
 
     return
 
