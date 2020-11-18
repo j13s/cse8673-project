@@ -17,7 +17,8 @@ class PolicyGradient:
         load_path=None,
         save_path=None,
         player_num = "",
-        rewardType = "monte"
+        rewardType = "monte",
+        toKeep = 100
     ):
 
         self.n_x = n_x
@@ -45,7 +46,7 @@ class PolicyGradient:
         self.sess.run(tf.global_variables_initializer())
 
         # 'Saver' op to save and restore all the variables
-        self.saver = tf.train.Saver(max_to_keep=150)
+        self.saver = tf.train.Saver(max_to_keep=toKeep)
 
         # Restore model
         if load_path is not None:
@@ -71,7 +72,7 @@ class PolicyGradient:
         self.episode_actions.append(action)
 
 
-    def choose_action(self, observation):
+    def choose_action(self, observation, actions,punish=1):
         """
             Choose action based on observation
 
@@ -82,19 +83,26 @@ class PolicyGradient:
         """
         # Reshape observation to (num_features, 1)
         observation = observation[:, np.newaxis]
-
         # Run forward propagation to get softmax probabilities
         prob_weights = self.sess.run(self.outputs_softmax, feed_dict = {self.X: observation})
+        prob = prob_weights[0]
+        mask = np.ones(prob.shape,dtype=bool)
+        mask[actions] = False
+        prob[mask] = 0
+        if np.sum(prob) != 0:
+            prob = prob/np.sum(prob)
+            action = np.random.choice(range(len(prob.ravel())), p=prob.ravel())
+        else:
+            action = np.random.choice(actions)
+        return action,prob_weights
 
-        # Select action using a biased sample
-        # this will return the index of the action we've sampled
-        action = np.random.choice(range(len(prob_weights.ravel())), p=prob_weights.ravel())
-        return action
-
-    def learn(self,episode,player,winner):
+    def learn(self,episode,player,winner,singleReward=None):
         # Discount and normalize episode reward
-        discounted_episode_rewards_norm = self.discount_and_norm_rewards(player,winner)
+        if singleReward is None:
+            discounted_episode_rewards_norm =self.discount_and_norm_rewards(player,winner)
         # Train on episode
+        else:
+            discounted_episode_rewards_norm = [singleReward]
         self.sess.run(self.train_op, feed_dict={
              self.X: np.vstack(self.episode_observations).T,
              self.Y: np.vstack(np.array(self.episode_actions)).T,
@@ -105,7 +113,7 @@ class PolicyGradient:
         self.episode_observations, self.episode_actions, self.episode_rewards  = [], [], []
 
         # Save checkpoint
-        if self.save_path is not None and episode%1000 == 0:
+        if self.save_path is not None and episode%1000 == 0 and singleReward is None:
             save_path = self.saver.save(self.sess, 
                                         self.save_path+str(episode))
             print("Model saved in file: %s" % save_path)
@@ -113,10 +121,7 @@ class PolicyGradient:
         return discounted_episode_rewards_norm
 
     def discount_and_norm_rewards(self,player,winner):
-
-        self.episode_rewards = np.array(self.episode_rewards)
         illegalIdx = np.where(self.episode_rewards == -2000)
-        legalIdx = np.where(self.episode_rewards != -2000)
         discounted_episode_rewards = np.zeros_like(self.episode_rewards)
         cumulative = 0
         for t in reversed(range(len(self.episode_rewards))):
@@ -124,11 +129,14 @@ class PolicyGradient:
             discounted_episode_rewards[t] = cumulative
         discounted_episode_rewards = np.float_(discounted_episode_rewards)
         d = discounted_episode_rewards
-        discounted_episode_rewards = ((d-d.min())/(d.max()-d.min()))+1
+        d = ((d-d.min())/(d.max()-d.min()))
         if player != winner:
-            discounted_episode_rewards = discounted_episode_rewards*-1
-        discounted_episode_rewards[illegalIdx] = discounted_episode_rewards[illegalIdx]-3
-        return discounted_episode_rewards
+            d = d*-1
+            #d = np.zeros(d.shape)
+        #else:
+            #d = np.ones(d.shape)
+        #d[illegalIdx] = d[illegalIdx]-3
+        return d
 
     def build_network(self,player_num):
         # Create placeholders
@@ -138,10 +146,12 @@ class PolicyGradient:
             self.discounted_episode_rewards_norm = tf.placeholder(tf.float32, [None, ], name="actions_value")
 
         # Initialize parameters
-        units_layer_1 = 10
-        units_layer_2 = 10
-        units_layer_3 = 10
+        units_layer_1 = 30
+        units_layer_2 = 30
+        units_layer_3 = 30
         units_layer_4 = 10
+        units_layer_5 = 10
+        units_layer_6 = 10
         units_output_layer = self.n_y
         with tf.name_scope('parameters'):
             W1 = tf.get_variable("W1"+str(player_num), [units_layer_1, self.n_x], initializer = tf.contrib.layers.xavier_initializer(seed=1))
@@ -152,12 +162,19 @@ class PolicyGradient:
             
             W3 = tf.get_variable("W3"+str(player_num), [units_layer_3, units_layer_2], initializer = tf.contrib.layers.xavier_initializer(seed=1))
             b3 = tf.get_variable("b3"+str(player_num), [units_layer_3, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
-
+            """
             W4 = tf.get_variable("W4"+str(player_num), [units_layer_4, units_layer_3], initializer = tf.contrib.layers.xavier_initializer(seed=1))
             b4 = tf.get_variable("b4"+str(player_num), [units_layer_4, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
             
-            W5 = tf.get_variable("W5"+str(player_num), [self.n_y, units_layer_4], initializer = tf.contrib.layers.xavier_initializer(seed=1))
-            b5 = tf.get_variable("b5"+str(player_num), [self.n_y, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+            W5 = tf.get_variable("W5"+str(player_num), [units_layer_5, units_layer_4], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+            b5 = tf.get_variable("b5"+str(player_num), [units_layer_5, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+            
+            W6 = tf.get_variable("W6"+str(player_num), [units_layer_6, units_layer_5], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+            b6 = tf.get_variable("b6"+str(player_num), [units_layer_6, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+            """
+            ####connection from the fourth layer 
+            W7 = tf.get_variable("W7"+str(player_num), [self.n_y, units_layer_3], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+            b7 = tf.get_variable("b7"+str(player_num), [self.n_y, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
 
         # Forward prop
         with tf.name_scope('layer_1'):
@@ -169,17 +186,26 @@ class PolicyGradient:
         with tf.name_scope('layer_3'):
             Z3 = tf.add(tf.matmul(W3, A2), b3)
             A3 = tf.nn.relu(Z3)
+        """
         with tf.name_scope('layer_4'):
             Z4 = tf.add(tf.matmul(W4, A3), b4)
             A4 = tf.nn.relu(Z4)
+        
         with tf.name_scope('layer_5'):
             Z5 = tf.add(tf.matmul(W5, A4), b5)
-            A5 = tf.nn.softmax(Z5)
+            A5 = tf.nn.relu(Z5)
+        with tf.name_scope('layer_6'):
+            Z6 = tf.add(tf.matmul(W6, A5), b6)
+            A6 = tf.nn.relu(Z6)
+        """
+        with tf.name_scope('layer_7'):
+            Z7 = tf.add(tf.matmul(W7, A3), b7)
+            A7 = tf.nn.softmax(Z7)
 
         # Softmax outputs, we need to transpose as tensorflow nn functions expects them in this shape
-        logits = tf.transpose(Z5)
+        logits = tf.transpose(Z7)
         labels = tf.transpose(self.Y)
-        self.outputs_softmax = tf.nn.softmax(logits, name='A5')
+        self.outputs_softmax = tf.nn.softmax(logits, name='A7')
 
         with tf.name_scope('loss'):
             neg_log_prob = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels)
