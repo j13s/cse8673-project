@@ -121,7 +121,6 @@ class PolicyGradient:
         return discounted_episode_rewards_norm
 
     def discount_and_norm_rewards(self,player,winner):
-        illegalIdx = np.where(self.episode_rewards == -2000)
         discounted_episode_rewards = np.zeros_like(self.episode_rewards)
         cumulative = 0
         for t in reversed(range(len(self.episode_rewards))):
@@ -129,15 +128,19 @@ class PolicyGradient:
             discounted_episode_rewards[t] = cumulative
         discounted_episode_rewards = np.float_(discounted_episode_rewards)
         d = discounted_episode_rewards
-        d = ((d-d.min())/(d.max()-d.min()))
+        try:
+            discounted_episode_rewards -= np.mean(discounted_episode_rewards)
+            discounted_episode_rewards /= np.std(discounted_episode_rewards)
+        except:
+            import pdb; pdb.set_trace()
+            pass
         if player != winner:
             d = d*-1
-            #d = np.zeros(d.shape)
-        #else:
-            #d = np.ones(d.shape)
-        #d[illegalIdx] = d[illegalIdx]-3
+            d = np.ones(d.shape)*-0.2
+        else:
+            d = np.ones(d.shape)
         return d
-
+        #return discounted_episode_rewards
     def build_network(self,player_num):
         # Create placeholders
         with tf.name_scope('inputs'):

@@ -9,6 +9,8 @@ from matplotlib import pyplot as plt
 import os 
 import tensorflow as tf
 import time
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
 def randwalk(number_of_players=4, number_of_pieces=4):
     """
     Generate a saved Numpy array representing a 2-player Ludo game sequence.
@@ -268,10 +270,7 @@ class Action:
             return self.__randomAction(state)
         
     def __action(self,play,state,playerPool,currPlayer,PG,data,train,n_y):
-        random = False
         action = prev = -1
-        punish = 1
-        count = 0
         onehot = None
         enemies = [i for i in playerPool if i != currPlayer]
         pBoard = state.board_for(currPlayer)
@@ -372,6 +371,7 @@ class Play:
             while True:
                 obs,currPlayer = g.get_observation()
                 state = State(obs,currPlayer)
+                action = None
                 if currPlayer in policyPlayers and len(state.actions()) > 0:
                     action= act.action(self,state,n_y,playerPool,currPlayer,data[currPlayer],PG,training)
                 elif currPlayer in randomPlayers:
@@ -385,6 +385,8 @@ class Play:
                     if not training:
                         print("saving history")
                         with open("history.pkl","wb") as file:
+                            for i,v in enumerate(data[1].actions):
+                                print(v,data[1].probs[i])
                             pickle.dump(data,file)
                     if episode%1000 == 0:
                         print("wincount: {}".format(winCount))
@@ -394,7 +396,14 @@ class Play:
                         winCount = defaultdict(int)
                         g.save_hist_video("videos/gameabc{}.avi".format(episode))
                     if training:
-                        self.__train(PG,data,episode,currPlayer)
+                        try:
+                            self.__train(PG,data,episode,currPlayer)
+                        except:
+                            g.save_hist_video(
+                               "error.avi".format(episode)
+                           )
+                            print("-----------------error------------------------")
+                            pass
                     break
         return winCount
 

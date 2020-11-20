@@ -19,7 +19,7 @@ episodes = 30001
 model2keep = int(episodes/1000)
 policyPlayer = [players[0]]
 random_player = [players[1]] 
-itr = ["18Nov/10"]
+itr = ["18Nov/13"]
 for i in itr:
     print("-----------{}--------------".format(i))
     new_path = save_path.format(i)
