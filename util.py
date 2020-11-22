@@ -382,12 +382,6 @@ class Play:
                     timeInterval += 50
                 if there_is_a_winner:
                     winCount[currPlayer] += 1
-                    if not training:
-                        print("saving history")
-                        with open("history.pkl","wb") as file:
-                            for i,v in enumerate(data[1].actions):
-                                print(v,data[1].probs[i])
-                            pickle.dump(data,file)
                     if episode%1000 == 0:
                         print("wincount: {}".format(winCount))
                         print("time take for this epoch is {}".format(time.time() - startTime))
